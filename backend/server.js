@@ -4,6 +4,8 @@ const dotenv = require("dotenv").config();
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const connectDB = require("./models/db");
+const userRoute = require("./routes/user.route");
+
 const PORT = process.env.PORT || 5000;
 
 const app = express();
@@ -11,6 +13,18 @@ const app = express();
 console.log(process.env.NODE_ENV);
 
 connectDB();
+
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cors());
+
+// Routes Middleware
+app.use("/api/users", userRoute);
+
+// Routes
+app.get("/", (req, res) => res.send("Home Page"));
 
 mongoose.connection.once("open", () => {
 	console.log("Connected to MongoDB");
