@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const connectDB = require("./models/db");
 const userRoute = require("./routes/user.route");
+const errorHandler = require("./middleware/errorHandler");
 
 const PORT = process.env.PORT || 5000;
 
@@ -14,7 +15,7 @@ console.log(process.env.NODE_ENV);
 
 connectDB();
 
-// Middlewares
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -25,6 +26,8 @@ app.use("/api/users", userRoute);
 
 // Routes
 app.get("/", (req, res) => res.send("Home Page"));
+
+app.use(errorHandler);
 
 mongoose.connection.once("open", () => {
 	console.log("Connected to MongoDB");
