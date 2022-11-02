@@ -6,6 +6,8 @@ const cors = require("cors");
 const connectDB = require("./models/db");
 const userRoute = require("./routes/user.route");
 const errorHandler = require("./middleware/errorHandler");
+const cookieParser = require("cookie-parser");
+const corsOptions = require("./config/corsOptions");
 
 const PORT = process.env.PORT || 5000;
 
@@ -17,9 +19,10 @@ connectDB();
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Routes Middleware
 app.use("/api/users", userRoute);

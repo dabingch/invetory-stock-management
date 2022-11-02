@@ -1,6 +1,11 @@
 const User = require("../models/User");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const generateToken = (id) => {
+	return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+};
 
 const registerUser = asyncHandler(async (req, res) => {
 	const { username, email, password } = req.body;
@@ -31,6 +36,18 @@ const registerUser = asyncHandler(async (req, res) => {
 		password: hashedPassword,
 	});
 
+	// Generate token
+	const token = generateToken(user._id);
+
+	// Send HTTP-only cookie
+	res.cookie("token", token, {
+		path: "/",
+		httpOnly: true,
+		expires: new Date(Date.now() + 1000 * 86400),
+		sameSite: "none",
+		secure: true,
+	});
+
 	if (user) {
 		const { _id, username, email, photo, phone, bio } = user;
 		res.status(201).json({
@@ -40,14 +57,19 @@ const registerUser = asyncHandler(async (req, res) => {
 			photo,
 			phone,
 			bio,
+			token,
 		});
 	} else {
 		res.status(400).json({ message: "Invalid user data" });
 	}
 
-	res.send("Register User");
+	// res.send("Register User");
 });
+
+// Login user
+const loginUser = asyncHandler(async (req, res) => {});
 
 module.exports = {
 	registerUser,
+	loginUser,
 };
