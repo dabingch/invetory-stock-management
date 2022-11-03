@@ -98,7 +98,8 @@ const loginUser = asyncHandler(async (req, res) => {
 			httpOnly: true,
 			expires: new Date(Date.now() + 1000 * 86400),
 			sameSite: "none",
-			secure: true,
+			// production: true
+			secure: false,
 		});
 
 		const { _id, username, email, photo, phone, bio } = user;
@@ -129,8 +130,29 @@ const logout = asyncHandler(async (req, res) => {
 	res.status(200).json({ message: "Logout successfully" });
 });
 
+// Get user
+const getUser = asyncHandler(async (req, res) => {
+	// res.send("Get User");
+	const user = await User.findById(req.user._id);
+
+	if (user) {
+		const { _id, username, email, photo, phone, bio } = user;
+		res.status(200).json({
+			_id,
+			username,
+			email,
+			photo,
+			phone,
+			bio,
+		});
+	} else {
+		res.status(400).json({ message: "User not found!" });
+	}
+});
+
 module.exports = {
 	registerUser,
 	loginUser,
 	logout,
+	getUser,
 };
