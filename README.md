@@ -1,1 +1,1 @@
-# MERN-Stock-Inventory-Management
+# User auth totorial
