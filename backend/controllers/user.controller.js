@@ -2,6 +2,9 @@ const User = require("../models/User");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const Token = require("../models/Token");
+const sendEmail = require("../utils/sendEmail");
 
 const generateToken = (id) => {
 	return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
@@ -224,7 +227,57 @@ const changePassword = asyncHandler(async (req, res) => {
 
 // Forget password
 const forgotPassword = asyncHandler(async (req, res) => {
-	res.send("forgot password!");
+	// res.send("forgot password!");
+	const { email } = req.body;
+	const user = await User.findOne({ email });
+
+	if (!user) {
+		return res.status(404).json({ message: "User not found!" });
+	}
+
+	// Delete token if exists
+	let existToken = await Token.findOne({ userId: user._id });
+	if (existToken) {
+		await existToken.deleteOne();
+	}
+
+	// Create reset token
+	let token = crypto.randomBytes(32).toString("hex") + user._id;
+	// console.log(token);
+	const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+	// res.json(hashedToken);
+
+	// Save token to database
+	await new Token({
+		userId: user._id,
+		token: hashedToken,
+		createdAt: Date.now(),
+		expiresAt: Date.now() + 10 * (60 * 1000), // 10 mins
+	}).save();
+
+	// Reset url
+	const resetUrl = `http://localhost:3000/resetpassword/${token}`;
+
+	// Reset Email
+	const message = `
+      <h2>Hello ${user.username}</h2>
+      <p>Please use the url below to reset your password</p>  
+      <p>This reset link is valid for only 10 minutes.</p>
+      <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+      <p>Regards...</p>
+      <p>Dabing Team</p>
+    `;
+	const subject = "Password Reset Request";
+	const send_to = user.email;
+	const sent_from = process.env.EMAIL_USER;
+
+	try {
+		await sendEmail(subject, message, send_to, sent_from);
+		res.status(200).json({ success: true, message: "Reset Email Sent" });
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ message: "Email not sent, please try again" });
+	}
 });
 
 module.exports = {
