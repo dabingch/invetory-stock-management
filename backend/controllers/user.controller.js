@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const validator = require("validator");
 const Token = require("../models/Token");
 const sendEmail = require("../utils/sendEmail");
 
@@ -17,11 +18,21 @@ const registerUser = asyncHandler(async (req, res) => {
 		return res.status(400).json({ message: "Please fill in all fields!" });
 	}
 
-	if (password.length < 6) {
+	if (!validator.isEmail(email)) {
+		return res.status(400).json({ message: "Please input a valid email!" });
+	}
+
+	if (!validator.isStrongPassword(password)) {
 		return res
 			.status(400)
-			.json({ message: "Password must be up to 6 characters!" });
+			.json({ message: "Password is not strong enough!" });
 	}
+
+	// if (password.length < 6) {
+	// 	return res
+	// 		.status(400)
+	// 		.json({ message: "Password must be up to 6 characters!" });
+	// }
 
 	// Check if user email already exists
 	const userExist = await User.findOne({ email });
