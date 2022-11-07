@@ -28,12 +28,6 @@ const registerUser = asyncHandler(async (req, res) => {
 			.json({ message: "Password is not strong enough!" });
 	}
 
-	// if (password.length < 6) {
-	// 	return res
-	// 		.status(400)
-	// 		.json({ message: "Password must be up to 6 characters!" });
-	// }
-
 	// Check if user email already exists
 	const userExist = await User.findOne({ email });
 

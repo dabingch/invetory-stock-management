@@ -28,7 +28,7 @@ app.use(cors(corsOptions));
 app.use("/api/users", userRoute);
 
 // Routes
-app.get("/", (req, res) => res.send("Home Page"));
+// app.get("/", (req, res) => res.send("Home Page"));
 
 app.use(errorHandler);
 
